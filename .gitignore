@@ -3,3 +3,7 @@ __pycache__/
 mask_rcnn_coco.h5
 .idea/
 
+*.csv
+dsb2018_logs
+dsb2018_logs_low_nms
+dsb2018_logs_multiclass
