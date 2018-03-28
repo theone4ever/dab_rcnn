@@ -66,7 +66,7 @@ class Dsb2018Dataset(utils.Dataset):
         training = get_file_data(training_pathname, images_pathname, masks_pathname)
         i=0
         for image in training:
-            if i%5==1:
+            if i%10==3:
                 if is_trainset == False:
                     self.add_image(source='dsb2018',
                        image_id=image['image']['id'],

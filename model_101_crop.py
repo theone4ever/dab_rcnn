@@ -1309,15 +1309,18 @@ def data_augmentation(input_image, masks,
     return output_image, output_masks
 
 
+from skimage.transform import rescale, resize
+
 def random_crop(img, mask, class_ids, width = 500, height = 500):
     assert img.shape[0] == mask.shape[0]
     assert img.shape[1] == mask.shape[1]
     h, w, _ = img.shape
     if h< height or w < width:
-        img = cv2.resize(img, (2*w, 2*h))
+        img = resize(img, (2*h, 2*w))
         resized_mask = np.zeros((h*2, w*2, mask.shape[-1]), dtype=mask.dtype)
         for i in range(0, mask.shape[-1]):
-            resized_mask[:,:,i] = cv2.resize(mask[:, :, i], (2*w, 2*h))
+            # resized_mask[:,:,i] = cv2.resize(mask[:, :, i], (2*w, 2*h))
+            resized_mask[:,:,i] = resize(mask[:, :, i], (2*h, 2*w))
         mask = resized_mask
         h, w, _ = img.shape
 
@@ -1370,6 +1373,14 @@ def load_image_gt(dataset, config, image_id, augment=False,
         if random.randint(0, 1):
             image = np.rot90(image)
             mask = np.rot90(mask)
+
+        # #brightness
+        # brightness=0.5
+        # factor = 1.0 + abs(random.gauss(mu=0.0, sigma=brightness))
+        # if random.randint(0, 1):
+        #     factor = 1.0 / factor
+        # table = np.array([((i / 255.0) ** factor) * 255 for i in np.arange(0, 256)]).astype(np.uint8)
+        # image = cv2.LUT(image, table)
         
      
     shape = image.shape
@@ -2002,7 +2013,7 @@ class MaskRCNN():
         # Bottom-up Layers
         # Returns a list of the last layers of each stage, 5 in total.
         # Don't create the thead (stage 5), so we pick the 4th item in the list.
-        _, C2, C3, C4, C5 = resnet_graph(input_image, "resnet101", stage5=True)
+        _, C2, C3, C4, C5 = resnet_graph(input_image, config.RESNET, stage5=True)
         # Top-down Layers
         # TODO: add assert to varify feature map sizes match what's in config
         P5 = KL.Conv2D(256, (1, 1), name='fpn_c5p5')(C5)
@@ -2420,7 +2431,7 @@ class MaskRCNN():
             epochs=epochs,
             steps_per_epoch=self.config.STEPS_PER_EPOCH,
             callbacks=callbacks,
-            validation_data=next(val_generator),
+            validation_data=val_generator,
             validation_steps=self.config.VALIDATION_STEPS,
             max_queue_size=100,
             workers=workers,
