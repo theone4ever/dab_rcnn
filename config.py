@@ -144,8 +144,6 @@ class Config(object):
     # train the RPN.
     USE_RPN_ROIS = True
 
-    RESNET = "resnet101"
-
     def __init__(self):
         """Set values of computed attributes."""
         # Effective batch size

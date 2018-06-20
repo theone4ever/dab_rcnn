@@ -1331,8 +1331,11 @@ def random_crop(img, mask, class_ids, width = 500, height = 500):
     img = img[y:y+height, x:x+width]
     mask = mask[y:y+height, x:x+width]
 
-    mask = mask[:, :, ~np.all(mask==0, axis=(0,1))]
-    class_ids = class_ids[:mask.shape[-1]]
+    _idx = np.sum(mask, axis=(0, 1)) > 0
+    mask = mask[:, :, _idx]
+    class_ids = class_ids[_idx]
+    #mask = mask[:, :, ~np.all(mask==0, axis=(0,1))]
+    #class_ids = class_ids[:mask.shape[-1]]
     return img, mask, class_ids
 
 
@@ -2013,7 +2016,7 @@ class MaskRCNN():
         # Bottom-up Layers
         # Returns a list of the last layers of each stage, 5 in total.
         # Don't create the thead (stage 5), so we pick the 4th item in the list.
-        _, C2, C3, C4, C5 = resnet_graph(input_image, config.RESNET, stage5=True)
+        _, C2, C3, C4, C5 = resnet_graph(input_image, 'resnet101', stage5=True)
         # Top-down Layers
         # TODO: add assert to varify feature map sizes match what's in config
         P5 = KL.Conv2D(256, (1, 1), name='fpn_c5p5')(C5)
